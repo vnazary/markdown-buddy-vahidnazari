@@ -45,7 +45,6 @@ markdown-buddy-vahidnazari/
 ├── README.md                 # Project documentation
 ├── technical_analysis.R      # Generates data, calculates indicators, plots charts
 ├── technical_analysis.Rmd    # R Markdown report documenting the script
-├── Reflection.md             # Reflection questions
 ├── Appendix.md               # AI prompts and key responses
 └── LICENSE                   # MIT License
 ```
