@@ -1,0 +1,100 @@
+# technical_analysis.R
+# Technical analysis of one year of simulated daily closing prices for a
+# fictional ticker, DEMO: 20-day and 50-day SMAs, 14-day RSI and SMA
+# crossover signals. Synthetic data only; not investment advice.
+#
+# The "## ---- label ----" lines split the script into sections that
+# technical_analysis.Rmd pulls in with knitr::read_chunk().
+
+## ---- packages ----
+library(TTR)
+library(dplyr)
+library(ggplot2)
+
+## ---- simulate-prices ----
+seed        <- 180     # random seed, so prices are reproducible
+n_days      <- 250     # number of trading days simulated
+start_price <- 100     # opening price of DEMO (USD)
+drift       <- 0.0005  # average daily return (0.05%)
+volatility  <- 0.02    # standard deviation of daily returns (2%)
+sma_short   <- 20      # short moving-average window (days)
+sma_long    <- 50      # long moving-average window (days)
+rsi_n       <- 14      # RSI window (days)
+
+set.seed(seed)
+
+# Random walk on daily returns: each close is the previous close
+# multiplied by (1 + a normally distributed return).
+returns <- rnorm(n_days, mean = drift, sd = volatility)
+
+prices <- data.frame(
+  date  = seq(as.Date("2025-01-02"), by = "day", length.out = n_days * 2)
+) |>
+  filter(!format(date, "%u") %in% c("6", "7")) |>  # drop weekends
+  slice_head(n = n_days) |>
+  mutate(close = round(start_price * cumprod(1 + returns), 2))
+
+head(prices)
+
+## ---- indicators ----
+prices <- prices |>
+  mutate(
+    sma_20 = SMA(close, n = sma_short),
+    sma_50 = SMA(close, n = sma_long),
+    rsi_14 = RSI(close, n = rsi_n)
+  )
+
+tail(prices)
+
+## ---- signals ----
+# A crossover happens when the sign of (short SMA - long SMA) changes
+# from one day to the next.
+prices <- prices |>
+  mutate(
+    spread      = sma_20 - sma_50,
+    prev_spread = lag(spread),
+    signal = case_when(
+      prev_spread <= 0 & spread > 0 ~ "Buy",
+      prev_spread >= 0 & spread < 0 ~ "Sell",
+      TRUE ~ NA_character_
+    )
+  )
+
+signals <- prices |>
+  filter(!is.na(signal)) |>
+  select(date, close, sma_20, sma_50, signal)
+
+## ---- price-chart ----
+ggplot(prices, aes(x = date)) +
+  geom_line(aes(y = close, colour = "Close")) +
+  geom_line(aes(y = sma_20, colour = "SMA 20"), na.rm = TRUE) +
+  geom_line(aes(y = sma_50, colour = "SMA 50"), na.rm = TRUE) +
+  geom_point(
+    data = signals,
+    aes(y = close, shape = signal, fill = signal),
+    size = 3
+  ) +
+  scale_colour_manual(values = c("Close" = "grey40",
+                                 "SMA 20" = "steelblue",
+                                 "SMA 50" = "darkorange")) +
+  scale_shape_manual(values = c("Buy" = 24, "Sell" = 25)) +
+  scale_fill_manual(values = c("Buy" = "forestgreen", "Sell" = "firebrick")) +
+  labs(title = "DEMO closing price with 20-day and 50-day SMAs",
+       x = NULL, y = "Price (USD)", colour = NULL,
+       shape = "Signal", fill = "Signal") +
+  theme_minimal()
+
+## ---- rsi-chart ----
+ggplot(prices, aes(x = date, y = rsi_14)) +
+  geom_line(colour = "purple", na.rm = TRUE) +
+  geom_hline(yintercept = c(30, 70), linetype = "dashed", colour = "grey50") +
+  scale_y_continuous(limits = c(0, 100)) +
+  labs(title = "DEMO 14-day RSI", x = NULL, y = "RSI") +
+  theme_minimal()
+
+## ---- signal-table ----
+knitr::kable(
+  signals,
+  digits = 2,
+  col.names = c("Date", "Close", "SMA 20", "SMA 50", "Signal")
+)

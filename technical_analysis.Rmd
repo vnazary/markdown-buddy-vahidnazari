@@ -28,11 +28,11 @@ The script reads no external files. All inputs are parameters set at the top of 
 
 | Parameter     | Value        | Meaning                                  |
 |---------------|--------------|------------------------------------------|
-| `seed`        | 180            | Random seed, so prices are reproducible  |
+| `seed`        | 180          | Random seed, so prices are reproducible  |
 | `n_days`      | 250          | Number of trading days simulated         |
 | `start_price` | 100          | Opening price of DEMO (USD)              |
-| `drift`       | 150         | Average daily return                     |
-| `volatility`  | 35        | Standard deviation of daily returns      |
+| `drift`       | 0.0005       | Average daily return                     |
+| `volatility`  | 0.02         | Standard deviation of daily returns      |
 | `sma_short`   | 20           | Short moving-average window (days)       |
 | `sma_long`    | 50           | Long moving-average window (days)        |
 | `rsi_n`       | 14           | RSI window (days)                        |
