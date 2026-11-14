@@ -1,0 +1,83 @@
+---
+title: "Documentation: technical_analysis.R"
+author: "Vahid Nazari"
+date: "November 13, 2026"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    highlight: tango
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+# Pull the labelled sections of the script into the chunks below,
+# so this report always shows the script's real code.
+knitr::read_chunk("technical_analysis.R")
+```
+
+# Purpose
+
+`technical_analysis.R` applies basic technical analysis to one year of simulated daily closing prices for a fictional ticker, **DEMO**. It calculates the 20-day and 50-day simple moving averages (SMA) and the 14-day Relative Strength Index (RSI), flags SMA crossover signals, and charts the results.
+
+> For learning purposes only. The data is synthetic and nothing here is investment advice.
+
+## Inputs
+
+The script reads no external files. All inputs are parameters set at the top of the script.
+
+| Parameter     | Value        | Meaning                                  |
+|---------------|--------------|------------------------------------------|
+| `seed`        | 180            | Random seed, so prices are reproducible  |
+| `n_days`      | 250          | Number of trading days simulated         |
+| `start_price` | 100          | Opening price of DEMO (USD)              |
+| `drift`       | 150         | Average daily return                     |
+| `volatility`  | 35        | Standard deviation of daily returns      |
+| `sma_short`   | 20           | Short moving-average window (days)       |
+| `sma_long`    | 50           | Long moving-average window (days)        |
+| `rsi_n`       | 14           | RSI window (days)                        |
+
+Packages used by the script:
+
+```{r packages}
+```
+
+## Processing Steps
+
+### Simulate prices
+
+Generates `n_days` of closing prices with a random walk, starting from `start_price`.
+
+```{r simulate-prices}
+```
+
+### Calculate indicators
+
+Adds the 20-day SMA, 50-day SMA and 14-day RSI as new columns.
+
+```{r indicators}
+```
+
+### Flag crossover signals
+
+Marks a buy when the short SMA crosses above the long SMA, and a sell when it crosses below.
+
+```{r signals}
+```
+
+## Outputs
+
+### Price chart with moving averages
+
+```{r price-chart, fig.cap = "DEMO closing price with 20-day and 50-day SMAs and crossover signals"}
+```
+
+### RSI chart
+
+```{r rsi-chart, fig.cap = "14-day RSI with reference lines at 30 and 70"}
+```
+
+### Signal summary
+
+```{r signal-table}
+```
